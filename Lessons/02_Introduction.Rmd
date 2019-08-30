@@ -16,7 +16,17 @@ editor_options:
 ## Opening Discussion
 What makes an effective data visualization? What are the essential components/characteristics, and what are optional but nice-to-have components/characteristics? 
 
-Come up with a consensus list among your group members. 
+Come up with a consensus list among your group members.
+
+- Accessible colour patterns
+- Axis labels and units
+- Legible font sizes
+- Data point size - large/small enough
+- Headline (context-dependent)
+- Axis scale
+- Interactive?
+
+
 
 Compare your list to other groups' lists. 
 
@@ -25,14 +35,18 @@ Compare your list to other groups' lists.
 1. Navigate to https://www.data-to-viz.com/.
 2. Think of a dataset that you or someone in your field might want to visualize. What types of variables does this dataset contain? What information might you want to convey with a visualization?
 
+For results of experiments, variables to be visualized could be the independent variable (explanatory variable) and the dependent variable (response variable) that are being investigated. Using a graph, one may want to convey the relationship between the two variables (e.g. linear, polynomial, logarithm etc) for continuous independent variables and the difference between groups for categorical/discrete variables
 <add notes here>
 
 3. Scroll to the "Explore" section of the website. Follow the flow chart to find a type of graph that would suit your data. Click for more information and a link to the R Graph Gallery. If there are multiple options for graphing your data, how might you choose between them?
 
+Scatterplot would be the best to explain the relationship between two continuous vars.
 <add notes here> 
 
 4. Discuss and compare your findings with a partner.
-5. Scroll further down to the "Caveats" section of the website and click "See the Collection." Choose five topics to explore (some of these are incomplete so choose another if that is the case). Write some notes about what you learned below. 
+5. Scroll further down to the "Caveats" section of the website and click "See the Collection." Choose five topics to explore (some of these are incomplete so choose another if that is the case). Write some notes about what you learned below.
+
+- Try to avoid pie chart, as we are not good at comparing angles. Barplot/histogram could be an alternative.
 
 <add notes here>
 
@@ -75,10 +89,10 @@ pal_futurama (function; comes in the ggsci package)
 ```{r}
 getwd()
 
-#install.packages(tidyverse)
-#install.packages(dataRetrieval)
-#install.packages(zoo)
-#install.packages(ggrepel)
+install.packages("tidyverse")
+install.packages("dataRetrieval")
+install.packages("zoo")
+install.packages("ggrepel")
 
 library(tidyverse)
 library(dataRetrieval)
@@ -123,10 +137,19 @@ Challenge:
 
 2. Add a column to your data frame for discharge in meters cubed per second
 
+```{r}
+EnoDischarge <- mutate(EnoDischarge, Discharge.m3 = (Discharge)^3)
+
+```
+
 hint: package dplyr in tidyverse includes a `mutate` function
 
 3. Add a column in your data frame for a 30-day rolling mean of the metric discharge
 
+```{r}
+
+
+```
 hint: package dplyr in tidyverse includes a `mutate` function
 hint: package zoo includes a `rollmean` function
 
@@ -147,8 +170,9 @@ hint: package ggrepel includes a `geom_label_repel` function
 
 hint: Google "add legend two geom layers ggplot"
 
-```{r}  
-
+```{r Generate Enoplot2}
+EnoPlot2 <- ggplot(EnoDischarge, aes(x = Date, y = Discharge)) + geom_line() +      
+  xlab("Year")
 
 ```
 
