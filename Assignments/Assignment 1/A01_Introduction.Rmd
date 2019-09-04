@@ -1,11 +1,15 @@
 ---
 title: "Assignment 1: Introduction"
-author: "Student Name"
+author: "Haoyu Zhang"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
   chunk_output_type: console
 ---
+```{r default setting}
+knitr::opts_chunk$set(echo = T, message = F)
+knitr::opts_chunk$set(fig.width=6, fig.height=6, fig.align = "center")
+```
 
 ## OVERVIEW
 
@@ -23,46 +27,67 @@ The completed exercise is due on 2019-09-04 before class begins.
 ## Course Setup
 1. Post the link to your forked GitHub repository below. Your repo should include one or more commits and an edited README file.  
 
->  Link:
+>  Link:https://github.com/forkhala/ENV-710-Data-Analysis.git
 
 2. Complete the Consent Form in Sakai. You must choose to either opt in or out of the research study being conducted in our course.
 
 Did you complete the form? (yes/no)
 
-> 
+> Yes
 
 ## Course Project
 
 3. What are some topics in aquatic science that are particularly interesting to you?
 
-> ANSWER: 
+> ANSWER: Water cycle; how plant communities are involved in the process; what are some potential impacts of climate change on hydrological cycle; or any topics concerning the role of forest in hydrology.
 
 4. Are there specific people in class who you would specifically like to have on your team?
 
-> ANSWER: 
+> ANSWER: No, I should be fine with anyone (hopefully).
 
 5. Are there specific people in class who you would specifically *not* like to have on your team?
 
-> ANSWER: 
+> ANSWER: No.
 
 ## Data Visualization Exercises
 
 6. Set up your work session. Check your working directory, load packages `tidyverse`,  `dataRetrieval`, and `lubridate`. Set your ggplot theme as theme_classic (you may need to look up how to set your theme).
 
 ```{r, message = FALSE}
+rm(list = ls())
+getwd()
+setwd("D:/William/Duke/Study/EOS 722/Hydrologic_Data_Analysis/Assignments/Assignment 1")
+require(tidyverse)
+require(dataRetrieval)
+require(lubridate)
+
+theme_set(theme_classic())
 
 ```
 
 7. Upload discharge data for the Eno River at site 02096500 for the same dates as we studied in class (2009-08-01 through 2019-07-31). Obtain data for discharge and gage height (you will need to look up these parameter codes). Rename the columns with informative titles. Imperial units can be retained (no need to change to metric).
 
 ```{r}
+EnoDischarge <- readNWISdv(siteNumbers = "02096500",
+                     parameterCd = c("00060","00065"),
+                     # Discharge (ft3/s); Gage height, feet	
+                     startDate = "2009-08-01",
+                     endDate = "2019-07-31")
+head(EnoDischarge)
+attr(EnoDischarge, "variableInfo")
+attr(EnoDischarge, "siteInfo")
+
+names(EnoDischarge)[c(4, 6)] <- c("Discharge", "Gageheight")
+names(EnoDischarge)
 
 ```
 
 8. Add a "year" column to your data frame (hint: lubridate has a `year` function).
 
 ```{r}
-
+EnoDischarge$Year <- year(EnoDischarge$Date)
+head(EnoDischarge)
+unique(EnoDischarge$Year)
 ```
 
 9. Create a ggplot of discharge vs. gage height, with gage height as the x axis. Color each point by year. Make the following edits to follow good data visualization practices: 
@@ -72,21 +97,38 @@ Did you complete the form? (yes/no)
 * Make points 50 % transparent
 
 ```{r}
+ggplot(data = EnoDischarge, aes(x = Gageheight, y = Discharge)) +
+  geom_point(na.rm = T, aes(color = as.factor(EnoDischarge$Year)), size = 1, alpha = 0.5 ) +
+  xlab("Gage Height (ft)") + ylab(expression("Discharge (ft"^3*")")) + 
+  theme(
+    legend.position = c(0.05, 1), legend.justification = c(0.05, 1), 
+    legend.title = element_blank(), legend.key.size = unit(0.5, "cm"), 
+    legend.box.margin = margin(0,0,0,0,"cm"))
 
 ```
 
 10. Interpret the graph you made. Write 2-3 sentences communicating the main takeaway points. 
 
-> ANSWER: 
+> ANSWER: Despite that the data span more than 10 years, there is a consistent and strong correlation between gage height and discharge rate. As gage height increases, discharge rate increases exponentially.
 
 11. Create a ggplot violin plot of discharge, divided by year. (Hint: in your aesthetics, specify year as a factor rather than a continuous variable). Make the following edits to follow good data visualization practices: 
 
 * Remove x axis label
 * Add a horizontal line at the 0.5 quantile within each violin (hint: draw_quantiles)
-```{r}
+```{r warning=FALSE}
+ggplot(data = EnoDischarge, aes(x = as.factor(EnoDischarge$Yea), y = Discharge)) +
+  geom_violin(na.rm = T, draw_quantiles = 0.5) +
+  xlab(element_blank()) + ylab(expression("Discharge (ft"^3*")"))
+# Original discharge extremely skewed; needs log transformation 
+
+ggplot(data = EnoDischarge, aes(x = as.factor(EnoDischarge$Yea), y = Discharge)) +
+  geom_violin(na.rm = T, draw_quantiles = 0.5) +
+  xlab(element_blank()) +
+  scale_y_log10(name =  expression("Discharge (ft"^3*")")) +
+  annotation_logticks(base = 10, scaled = T, side = "l")
 
 ```
 
 12. Interpret the graph you made. Write 2-3 sentences communicating the main takeaway points. 
 
-> ANSWER: 
+> ANSWER: Discharge is highly positively skewed for all years, so log10 transformation was performed for better visualization. The median seems to remain relatively stable over the time period, although there might be a slightly upward trend. Variance within each year is high, but variance among years seems to be smaller based on log10 transformation.

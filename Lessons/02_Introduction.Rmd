@@ -138,7 +138,7 @@ Challenge:
 2. Add a column to your data frame for discharge in meters cubed per second
 
 ```{r}
-EnoDischarge <- mutate(EnoDischarge, Discharge.m3 = (Discharge)^3)
+EnoDischarge <- mutate(EnoDischarge, Discharge.m3 = Discharge/35.3147)
 
 ```
 
@@ -147,7 +147,8 @@ hint: package dplyr in tidyverse includes a `mutate` function
 3. Add a column in your data frame for a 30-day rolling mean of the metric discharge
 
 ```{r}
-
+EnoDischarge <- mutate(EnoDischarge, rmean.30d = rollmean(EnoDischarge$Discharge.m3, 
+                                                          30, fill = NA))
 
 ```
 hint: package dplyr in tidyverse includes a `mutate` function
@@ -158,7 +159,11 @@ hint: package zoo includes a `rollmean` function
 hint: https://ggplot2.tidyverse.org/reference/ggtheme.html
 
 5. Edit axes
-
+```{r}
+EnoPlot2 <- ggplot(EnoDischarge, aes(Date))+
+  theme_classic()
+print(EnoPlot2)
+```
 6. Create two geom_line aesthetics, one for metric discharge and one for rolling mean of metric discharge. Color these differently.
 
 7. Label the day that Hurricane Florence hit North Carolina. 
@@ -170,11 +175,6 @@ hint: package ggrepel includes a `geom_label_repel` function
 
 hint: Google "add legend two geom layers ggplot"
 
-```{r Generate Enoplot2}
-EnoPlot2 <- ggplot(EnoDischarge, aes(x = Date, y = Discharge)) + geom_line() +      
-  xlab("Year")
-
-```
 
 ## Closing Discussion
 In what ways was the second plot a more effective visualization than the first? 
