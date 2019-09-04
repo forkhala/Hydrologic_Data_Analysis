@@ -15,8 +15,13 @@ editor_options:
 
 ## Opening Discussion
 What is a lake? How does this differ from a stream, river, or wetland?
+- water flows in steam, river; lake and wetland have relatively static water system
+- Lake is usually in depression
+- Wetland has emergence of vegetation
+- The bottom of lake rarely receives light
 
 What are the physical properties of lakes?
+- 
 
 ## Session Set Up
 ```{r, message = FALSE}
@@ -190,6 +195,7 @@ TempprofileMay2016 <-
   scale_x_continuous(position = "top", limits = c(0, 30)) +
   labs(x = expression("Temperature "(degree*C)), y = "Depth (m)")
 print(TempprofileMay2016)
+# Water has the highest density at 4 degree C. Once T goes lower, water will expand while ice crystal is forming, reducing the density
 
 TempprofileJune2016 <- 
   TempprofileMay2016 +
@@ -238,6 +244,7 @@ print(Tempprofiles2016)
 
 Paul Lake, like many lakes in temperate climates, is **dimictic**. What does this mean? What evidence do you see of this phenomenon in the graph? If you had data from the rest of the year, what would you expect to see?
 <add notes here>
+dimictic -> mixing twice per year; fall turnover, spring turnover
 
 
 Let's put your prediction to the test. In 1993, the lake was sampled in November. Wrangle your data to capture this date and create a profile graph of that date.
@@ -247,6 +254,9 @@ Let's put your prediction to the test. In 1993, the lake was sampled in November
 
 Why does mixing occur in the spring and fall? What are the mechanisms that make this possible?
 <add notes here>
+Wind & density gradient
+Spring: as ice on the top melts and water near the surface gets warmer, water column will reach a point where the whole column is at about 4 degree C and mixing along the column can occurs.
+Fall: the reverse process of spring
 
 ## Closing Discussion
 
