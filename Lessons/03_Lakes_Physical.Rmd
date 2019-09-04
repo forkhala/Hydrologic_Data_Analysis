@@ -53,6 +53,7 @@ Common steps/checks for data wrangling:
 # Is the date column perceived as a date by R?
 class(NTLdata$sampledate)
 NTLdata$sampledate <- as.Date(NTLdata$sampledate, "%m/%d/%y")
+# "%m/%d/%Y" for four-digit year
 class(NTLdata$sampledate)
 # What does this column look like now?
 
