@@ -16,7 +16,10 @@ editor_options:
 
 ## Opening Discussion
 We analyzed temperature profiles and seasonal changes on Wednesday. What were some key takeaway points about thermal stratification and mixing?
-
+- epilimnion, metalimnion/thermoclibe, hypolimnion
+- dmictic: mixing in fall and spring
+- maximum density of water at 4 degree C
+ 
 ## Session Set Up
 ```{r, message = FALSE}
 getwd()
@@ -87,6 +90,8 @@ Oxygenprofiles2016 <-
   theme(axis.text.y = element_blank(), axis.title.y = element_blank())
 print(Oxygenprofiles2016)
 
+# ggplot2 facet works for different levels in the same column; but not for different columns.
+
 Physicalprofiles2016 <- 
   plot_grid(Tempprofiles2016, Lightprofiles2016, Oxygenprofiles2016, 
             ncol = 3, rel_widths = c(1.25, 1, 1.5))
@@ -96,15 +101,15 @@ print(Physicalprofiles2016)
 
 How do temperature profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> Temperature in epilimnion increases, and the difference between epilimnion and hypolimnion increases over the course of summer. By contrast, hypolimnion does not change very much.
 
 How do irradiance profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> Changes in irradiance is not unidirectional. Could be due to algal growth during mid July, which absorbs light at the surface.
 
 How do dissolved oxygen profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> Dissolved oxygen level above 5 meters decreases continuously, but DO below 5 meters does not change very much and remains low all the time. Gasous solubility in water decreases with temperature. Hump in DO between metalimnion and hypolimnion is due to rich nutrient and just enough light for photosynthesis by phytoplankton. In the layers below, respiration by microbes, vertebrates, invertebrate consume oxygen, and since hypolimnion does not mix with layers above, DO there is very low creating an abrupt decline.
 
 
 ## Data Analysis
@@ -122,6 +127,31 @@ Steps:
 5. Create a ggplot of surface temps by date and facet by month. Add `geom_smooth(se = FALSE, method = lm)` to the plot to display the regression line.
 
 ```{r}
+Paulsurface <- Pauldata %>%
+  mutate(month = month(sampledate)) %>%
+  filter(depth == 0 & month < 9)
+
+Paulsurface5 <- filter(Paulsurface, month ==5)
+Paulsurface6 <- filter(Paulsurface, month ==6)
+Paulsurface7 <- filter(Paulsurface, month ==7)
+Paulsurface8 <- filter(Paulsurface, month ==8)
+
+Paul5.lm <- lm(temperature_C ~ depth, data = Paulsurface5)
+summary(Paul5.lm)
+
+Paul6.lm <- lm(temperature_C ~ depth, data = Paulsurface6)
+summary(Paul6.lm)
+
+Paul7.lm <- lm(temperature_C ~ depth, data = Paulsurface7)
+summary(Paul7.lm)
+
+Paul8.lm <- lm(temperature_C ~ depth, data = Paulsurface8)
+summary(Paul8.lm)
+
+ggplot(data = Paulsurface, aes(x = sampledate, y = temperature_C), na.rm = T) +
+  geom_point() +
+  geom_smooth(se = F, method = "lm") +
+  facet_grid(rows = vars(month))
 
 
 
