@@ -29,7 +29,7 @@ library(gridExtra)
 library(cowplot)
 library(lubridate)
 
-NTLdata <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+NTLdata <- read.csv("D:/William/Duke/Study/EOS 722/Hydrologic_Data_Analysis/Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 
 theme_set(theme_classic())
 
@@ -131,29 +131,27 @@ Paulsurface <- Pauldata %>%
   mutate(month = month(sampledate)) %>%
   filter(depth == 0 & month < 9)
 
-Paulsurface5 <- filter(Paulsurface, month ==5)
-Paulsurface6 <- filter(Paulsurface, month ==6)
-Paulsurface7 <- filter(Paulsurface, month ==7)
-Paulsurface8 <- filter(Paulsurface, month ==8)
+Paulsurface5 <- filter(Paulsurface, month == 5)
+Paulsurface6 <- filter(Paulsurface, month == 6)
+Paulsurface7 <- filter(Paulsurface, month == 7)
+Paulsurface8 <- filter(Paulsurface, month == 8)
 
-Paul5.lm <- lm(temperature_C ~ depth, data = Paulsurface5)
+Paul5.lm <- lm(temperature_C ~ year4, data = Paulsurface5)
 summary(Paul5.lm)
 
-Paul6.lm <- lm(temperature_C ~ depth, data = Paulsurface6)
+Paul6.lm <- lm(temperature_C ~ year4, data = Paulsurface6)
 summary(Paul6.lm)
 
-Paul7.lm <- lm(temperature_C ~ depth, data = Paulsurface7)
+Paul7.lm <- lm(temperature_C ~ year4, data = Paulsurface7)
 summary(Paul7.lm)
 
-Paul8.lm <- lm(temperature_C ~ depth, data = Paulsurface8)
+Paul8.lm <- lm(temperature_C ~ year4, data = Paulsurface8)
 summary(Paul8.lm)
 
 ggplot(data = Paulsurface, aes(x = sampledate, y = temperature_C), na.rm = T) +
   geom_point() +
   geom_smooth(se = F, method = "lm") +
   facet_grid(rows = vars(month))
-
-
 
 ```
 
