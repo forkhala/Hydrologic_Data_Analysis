@@ -15,6 +15,11 @@ editor_options:
 
 ## Opening Discussion
 What are the physical properties of streams and rivers? What variables might be of interest?
+- Discharge m^3/s (velocity multiplied by cross-section area) vs velocity m/s
+- bed material -> erosion -> turbidity
+- temperature
+- mixing -> turbulent + laminar flow
+- slope
 
 ## Session Set Up
 
@@ -43,7 +48,7 @@ names(EnoDischarge.ratingcurve)[4:7] <- c("Discharge", "D.Approval.Code",
                                           "Gage.Height", "GH.Approval.Code")
 
 DvsGHplot <-
-  ggplot(EnoDischarge.ratingcurve, aes(x = Discharge, y = Gage.Height)) +
+  ggplot(EnoDischarge.ratingcurve, aes(y = Discharge, x = Gage.Height)) +
   geom_point(alpha = 0.5) 
 print(DvsGHplot)
 ```
@@ -74,7 +79,7 @@ NehalemSummary <- whatNWISdata(siteNumbers = "14299800")
 
 What data are available from the sites? Pay particular attention to the parameter codes and statistic codes.
 
->
+> Each row represents one variable/statistic measured at the same location
 
 What is the period of record for mean daily discharge at each of these sites?
 
@@ -96,8 +101,8 @@ We will access the last 10 years of data for our purposes today. Alternatively, 
 # Import data
 EnoDischarge <- readNWISdv(siteNumbers = "02096500",
                      parameterCd = "00060", # discharge (ft3/s)
-                     startDate = "2009-09-01",
-                     endDate = "2019-08-31")
+                     startDate = "2009-09-01", # Delete date to get the earliest one
+                     endDate = "2019-08-31") # Delete date to get the latest one
 
 VerdeDischarge <- readNWISdv(siteNumbers = "09504000",
                      parameterCd = "00060", # discharge (ft3/s)
@@ -118,7 +123,7 @@ NehalemDischarge <- readNWISdv(siteNumbers = "14299800",
                      parameterCd = "00060", # discharge (ft3/s)
                      startDate = "2009-09-01",
                      endDate = "2019-08-31")
-
+# Note the variable is average discharge (00060_00003)
 ```
 
 ### Data Wrangling
@@ -200,15 +205,15 @@ print(CombinedPlot)
 
 How does the magnitude of discharge compare for these rivers?
 
->
+> Eno river has the highest among all five rivers except verde river, but all them are at the magnitude of around 10^4
 
 Which of these rivers have a seasonal cycle of discharge? How might you explain the presence and timing of seasonal cycles based on climatic conditions?
 
->
+> Bitterrot river, sauk river, nehalem river have seasonal cycle, and all of three have th highest discharge during spring. So the peaks are probably due to spring runnoff.
+> The seasonal cycle in Sauk river particularly was disrupted during the last five years, probably due to warming winters
 
 Hypothetical question: If you wanted to create a ggplot using facets instead of `plot_grid`, how would you go about wrangling your dataset differently? 
-
->
+> Create a column specifying lake name and combine by rows (rbind())
 
 ## Defining "typical" discharge pattern
 Let's take the Bitterroot River, which displays a clear seasonal cycle. Let's define the median discharge on a given day of year and overlay this onto the range experienced. We will take a longer period of record this time.
@@ -242,3 +247,4 @@ Challenge: Edit the code above so that rather than plotting the minimum and maxi
 
 ## Closing Discussion
 What are your impressions of seasonal and interannual discharge for our example rivers? How might you go about interpreting discharge data for any given river?
+> By looking at discharge vs date, we can determine if the river is driven by rainfall or driven by snow-melt. Also, disruption of seasonal cycle can also be visualized with graphs of discharge vs date.
