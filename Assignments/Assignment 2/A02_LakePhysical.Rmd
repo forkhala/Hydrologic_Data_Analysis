@@ -39,6 +39,7 @@ getwd()
 library(tidyverse)
 library(lubridate)
 library(cowplot)
+library(viridis)
 
 rawdat <- read.csv("../../Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv",header = T)
 head(rawdat)
@@ -75,6 +76,10 @@ p1 <- ggplot(Peterdata1990, aes(x = temperature_C, y = depth, color = daynum)) +
   geom_point(na.rm = T, size = 0.9) +
   scale_x_continuous(position = "top") +
   scale_y_reverse() +
+  coord_cartesian(xlim = c(0, 25)) +
+  #scale_colour_gradient(limits = c(130, 260), low = "#132B43", high = "#56B1F7") +
+  # Note set the limits of color gradient to keep it constant across plots
+  scale_color_viridis(limits = c(130, 260)) +
   labs(x = expression("1990 Temperature "(degree*C)), y = "Depth (m)") +
   theme(legend.position = "none")
 print(p1)
@@ -83,6 +88,9 @@ p2 <- ggplot(Peterdata2010, aes(x = temperature_C, y = depth, color = daynum)) +
   geom_point(na.rm = T, size = 0.9) +
   scale_x_continuous(position = "top") +
   scale_y_reverse() +
+  coord_cartesian(xlim = c(0, 25)) +
+  #scale_colour_gradient(limits = c(130, 260), low = "#132B43", high = "#56B1F7") +
+  scale_color_viridis(limits = c(130, 260)) +
   labs(x = expression("2010 Temperature "(degree*C)), y = "") +
   theme(legend.position = "right", legend.margin = margin(0,0,0,0,"cm"))
 print(p2)
