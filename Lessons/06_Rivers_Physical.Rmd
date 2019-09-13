@@ -16,6 +16,10 @@ editor_options:
 ## Opening Discussion
 How is climate change impacting discharge in streams and rivers? What are the new and ongoing challenges faced by these impacts in watersheds?
 
+> Timing of increase of discharge in spring tends to be earlier due to warmer temperature.
+Higher evaporation due to inceased temperature might reduce the flow rate.
+Rise in sea level -> intrusion of salt water into freshwater system -> change the salinity
+
 ## Session Set Up
 
 ```{r, message = FALSE}
@@ -44,6 +48,8 @@ $P = 1/T$
 This is where the terms "100-year flood" and similar are derived. Remember this is a probability based on past occurrence, not an accurate forecast of how often we will see that event happening. When current patterns of discharge differ from past patterns, we observe **nonstationary** behavior. Nonstationarity results in events that occur more or less frequency than predicted based on the exceedence probability.
 
 ### Has Eno River dicharge displayed stationary behavior over the period of record?
+
+> Stationary behavior: characteristics of changes within a year stay relatively constant over years
 
 Let's import discharge data for the Eno River near Durham for all available dates.
 
@@ -78,7 +84,7 @@ EnoRecurrence <-
   filter(Year < 1993) %>%
   group_by(Year) %>%
   summarise(PeakDischarge = max(Discharge)) %>% 
-  mutate(Rank = rank(-PeakDischarge), 
+  mutate(Rank = rank(-PeakDischarge), # Note -PeakDischarfe
          RecurrenceInterval = (length(Year) + 1)/Rank, 
          Probability = 1/RecurrenceInterval)
 
@@ -101,6 +107,7 @@ Eno.RImodel <- lm(data = EnoRecurrence, PeakDischarge ~ log(RecurrenceInterval))
 summary(Eno.RImodel)
 
 #What is the discharge for a 100-year flood in this system? a 500-year flood?
+# First parameter is intercetp; second parameter is slope
 Eno.RImodel$coefficients[1] + Eno.RImodel$coefficients[2]*log(100)
 Eno.RImodel$coefficients[1] + Eno.RImodel$coefficients[2]*log(500)
 ```
@@ -137,12 +144,12 @@ Eno.RImodel$coefficients[1] + Eno.RImodel$coefficients[2]*log(500)
 
 What differences did you see for the recurrence intervals built under different periods of record? How would your prediction of flood events differ if you were to use these models for forecasting purposes? 
 
->
+> With a longer periods (full range of the data), the linear model predicts a higher peak discharge given the same R.I. than the model constructed from data before 1993.
 
 What would you recommend for a watershed manager seeking to build the most accurate recurrence interval model for the Eno River?
 
-> 
-
+> Try to use as many avilable data points as possible to construct a predictory model.
+Alternatively, we cna use moving window (i.e. the most recent data) to construct models for each year.
 
 ### Examining the effects of urbanization on discharge
 
@@ -163,7 +170,61 @@ SaladoPlot <-
          xlab("Year")
 print(SaladoPlot)
 
-# add more code here: 
+# add more code here:
+# Using the first 30 years
+
+SaladoDischarge <- 
+  SaladoDischarge %>%
+  mutate(Year = year(Date))
+range(SaladoDischarge$Year)
+
+SaladoRecurrence.old <- 
+  SaladoDischarge %>%
+  filter(Year < 1990) %>%
+  group_by(Year) %>%
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge), # Note -PeakDischarfe
+         RecurrenceInterval = (length(Year) + 1)/Rank, 
+         Probability = 1/RecurrenceInterval)
+
+SaladoRecurrencePlot <- 
+  ggplot(SaladoRecurrence.old, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() #+
+  #scale_x_log10() 
+print(SaladoRecurrencePlot)
+
+Salado.RImodel.old <- lm(data = SaladoRecurrence.old, PeakDischarge ~ log(RecurrenceInterval))
+summary(Salado.RImodel.old)
+
+Salado.RImodel.old$coefficients[1] + Salado.RImodel.old$coefficients[2] * log(100)
+Salado.RImodel.old$coefficients[1] + Salado.RImodel.old$coefficients[2] * log(500)
+
+# Using last 30 years data
+
+SaladoRecurrence.new <- 
+  SaladoDischarge %>%
+  filter(Year > 1989) %>%
+  group_by(Year) %>%
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge), # Note -PeakDischarfe
+         RecurrenceInterval = (length(Year) + 1)/Rank, 
+         Probability = 1/RecurrenceInterval)
+
+SaladoRecurrencePlot.new <- 
+  ggplot(SaladoRecurrence.old, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() +
+  geom_point(data = SaladoRecurrence.new, color = "#02818a",
+             aes(x = RecurrenceInterval, y = PeakDischarge))
+print(SaladoRecurrencePlot.new)
+
+Salado.RImodel.new <- lm(data = SaladoRecurrence.new, PeakDischarge ~ log(RecurrenceInterval))
+summary(Salado.RImodel.new)
+
+Salado.RImodel.old$coefficients[1] + Salado.RImodel.old$coefficients[2] * log(100)
+Salado.RImodel.old$coefficients[1] + Salado.RImodel.old$coefficients[2] * log(500)
+
+Salado.RImodel.new$coefficients[1] + Salado.RImodel.new$coefficients[2] * log(100)
+Salado.RImodel.new$coefficients[1] + Salado.RImodel.new$coefficients[2] * log(500)
 
 ```
 
