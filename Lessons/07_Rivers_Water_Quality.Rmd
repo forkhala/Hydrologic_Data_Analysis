@@ -15,6 +15,8 @@ editor_options:
 
 ## Opening Discussion
 What is water quality? What are some of the things it encompasses? 
+Water quality depends on the purpose of water being used (e.g. for human drinking, swiming, supporting aquatic ecosystem)
+
 
 ## Session Set Up
 
@@ -38,11 +40,11 @@ theme_set(theme_classic())
 
 Why are these important measures of water quality?
 
->
+> pH range acceptable for water use; pH tolerance of certain organisms
 
 What types of disturbances can impact these parameters?
 
->
+> human activity such as mining
 
 ## How does mining impact specific conductance and pH?
 
@@ -63,10 +65,10 @@ dat <- dat.raw %>%
          Value = result_va) %>%
   group_by(Date, Parameter, Site) %>%
   summarize(Value = mean(Value)) %>%
-  spread(key = Parameter, value = Value) %>%
+  spread(key = Parameter, value = Value) %>% # key
   rename(SpC = '00095', pH = '00400') %>%
   mutate(Site = case_when(Site == "03201300" ~ "Kanawha River",
-                          Site == "03206790" ~ "Twelvepole Creek"))
+                          Site == "03206790" ~ "Twelvepole Creek")) #case_when work in a way similar to if function
 
 dat.early <- dat %>%
   filter(Date < "1977-01-01")
@@ -90,7 +92,6 @@ pH.plot.2 <- ggplot(dat.early, aes(x = Date, y = pH, color = Site)) +
   scale_color_manual(values = c("steelblue4", "darkorange4")) +
     ggtitle("pH of Two West Virginia Rivers 1956:1976")
 
-
 print(pH.plot.2)
 
 SpC.plot <- ggplot(dat.early, aes(x = Date, y = SpC, color = Site)) +
@@ -105,15 +106,15 @@ print(SpC.plot)
 
 What differences do you see?
 
->
+> Twelvepole creek has less pH increase since 1970 as well as less variation in pH. Twelvepole creek has less specific conductance than Kanawha river and less variation. Also, 12pole creek has less sampling frequency
 
 Why might mining be causing the changes you see?
 
->
+> runoff that contains ions and salts enter the river from mining site near 12pole creek
 
 What is the data frequency of these water quality samples? Why don't we have daily values? How does this inform your interpretation of the data?
 
->
+> The rivers were sampled every ~10 days. There would be even larger variation if the rivers had been sampled every day. With higher frequency, data could capture more variability in the water quality of interest
   
 ## What can legislative protections do for water quality?
 
@@ -134,7 +135,6 @@ pH.plot.2 <- ggplot(dat, aes(x = Date, y = pH, color = Site)) +
   scale_color_manual(values = c("steelblue4", "darkorange4")) +
     ggtitle("pH of Two West Virginia Rivers 1956:2000")
 
-
 print(pH.plot.2)
 
 SpC.plot <- ggplot(dat, aes(x = Date, y = SpC, color = Site)) +
@@ -150,7 +150,7 @@ print(SpC.plot)
 
 Discuss with your group about the differences you see.
 
->
+> pH in Kanawha river became stable after the legislation and remained relatively high  at around 7.3 since then, while pH in 12pole creek started to decline to 6.3 since 1977. As for specific conductance, 12pole creek did not change very much after 1977 compared to before, whereas variations in Kanawha river started to decline.
 
 ## Were remediation efforts successful?
 
@@ -208,11 +208,11 @@ t.test(x, y)
 
 How would you communicate these results to a manager? 
 
->
+> The legisalative protection resulted in a statistically significant decrease in specific conductance in Kanawha river, and thus we should regard legislation as an effective way to protect river from impact of mining in general.
 
 What can you say with data visualization that you can't say with just the statistical tests?
 
->
+> There were less variations in specific conductance since the legislation in addition to the decline in the mean, and the statistical test could not reflect changes in variability.
 
 
 ## How have individual ions changed over the this timeperiod?
@@ -227,18 +227,29 @@ Manganese.dat <- Manganese.raw %>%
  select(Date = sample_dt, Manganese_ugL = result_va)
   
  
-Manganese.plot <- ggplot(Manganese.dat, aes(x = Date, y = Manganese_ugL)) +
-  geom_line() +
+Manganese.plot1 <- ggplot(Manganese.dat, aes(x = Date, y = Manganese_ugL)) +
+  geom_line()+
   geom_vline(xintercept = 1977, color = "grey", alpha = 0.8, lwd = 2, lty = 2) + 
+  geom_hline(yintercept = 50, color = "red", alpha = 0.5) +
   labs(y = expression("Manganese ("*mu*g*l^-1*")")) +
   ggtitle("Manganese Concentrations in the Kanawha River")
 
-print(Manganese.plot)
+print(Manganese.plot1)
+
+Manganese.plot2 <- ggplot(Manganese.dat, aes(x = Date, y = Manganese_ugL)) +
+  geom_point()+ geom_smooth()+
+  geom_vline(xintercept = 1977, color = "grey", alpha = 0.8, lwd = 2, lty = 2) + 
+  geom_hline(yintercept = 50, color = "red", alpha = 0.5) +
+  labs(y = expression("Manganese ("*mu*g*l^-1*")")) +
+  ggtitle("Manganese Concentrations in the Kanawha River")
+
+print(Manganese.plot2)
+
 ```
 
 Try plotting the manganese data with points instead of lines. Which do you prefer? Why?
 
->
+> 
 
 EPA drinking water standards for Manganese are 0.05 *_mg/L_*. How does the Kanawha stack up?
 
@@ -247,7 +258,19 @@ EPA drinking water standards for Manganese are 0.05 *_mg/L_*. How does the Kanaw
 Take some time to look at other ions as well. Some suggestions are sulfate (```00945```), nitrate (```71851```), and iron (```71885```), or use the ```whatNWISdata()``` function to find others! EPA drinking water regulations can be found here: https://www.epa.gov/ground-water-and-drinking-water/national-primary-drinking-water-regulations. Pay close attention to units! Information about parameter codes can be found in the dataframe ```parameterCdFile```.
 
 ```{r other_ion_data}
+iron.raw <- readNWISqw('03201300', parameterCd = '71885')
 
+iron.dat <- iron.raw %>%
+ select(Date = sample_dt, Manganese_ugL = result_va)
+
+iron.plot <- ggplot(iron.dat, aes(x = Date, y = Manganese_ugL)) +
+  geom_point()+ geom_smooth()+
+  geom_vline(xintercept = 1977, color = "grey", alpha = 0.8, lwd = 2, lty = 2) + 
+  geom_hline(yintercept = 50, color = "red", alpha = 0.5) +
+  labs(y = expression("Iron ("*mu*g*l^-1*")")) +
+  ggtitle("Iron Concentrations in the Kanawha River")
+
+print(iron.plot)
 
 ```
 
