@@ -15,7 +15,7 @@ editor_options:
 
 ## Opening Discussion
 What are indicator species? Why are they helpful in thinking about water quality?
-
+> Species that are sensitive to environmental conditions, nutritions, pollutants etc. and can be used to monitor the health/status of a water body.
 
 ## Session Set Up
 
@@ -45,7 +45,7 @@ Bacteria is present in almost every stream on earth. Most bacteria are harmless,
 
 Why might it be helpful to have multiple ways to measure bacteria?
 
->
+> cross validated. 
 
 Where and when do you think the biggest risks from harmful bacteria are?
 
@@ -53,7 +53,7 @@ Where and when do you think the biggest risks from harmful bacteria are?
 
 Measuring microbiogial indicators is more expensive and time consuming than some other water quality metrics. Where and when would you measure these?
 
->
+> Samples of microbiogial indicators are liketly to biased towards rivers that are thought to have water quality issue, that serve as the source for drinking water, and that are downstream to sewage treatment facilities.
 
 ## How have improvements in sewage treatment affected water quality?
 
@@ -142,19 +142,23 @@ Total.cell.plot <- ggplot(microb.dat, aes(x = Date)) +
 print(Total.cell.plot)
 
 Microbes.plot <- plot_grid(Total.coli.plot +
-                             labs(title = "Total Coliform", y = ""),
+                             labs(title = "Total Coliform", y = "") +
+                             theme(title = element_text(size =8)),
                            F.coli.45.plot + 
-                             labs(title = "Fecal Coliform (.45)", y = "") ,
+                             labs(title = "Fecal Coliform (.45)", y = "") +
+                             theme(title = element_text(size =8)),
                            F.coli.7.plot + 
-                             labs(title = "Fecal Coliform (.7)", y = "") ,
+                             labs(title = "Fecal Coliform (.7)", y = "") +
+                             theme(title = element_text(size =8)),
                            F.strep.strep.plot + 
                              labs(title = "Fecal streptocci (KF streptococcus)",
-                                  y = ""),
+                                  y = "") + theme(title = element_text(size =8)),
                            F.strep.ente.plot +
                              labs(title = "Fecal streptocci (m-Enterococcus)",
-                                  y = ""), 
+                                  y = "") + theme(title = element_text(size =8)), 
                            Total.cell.plot + 
-                             labs(title = "Total cell count", y = ""),
+                             labs(title = "Total cell count", y = "") +
+                             theme(title = element_text(size =8)),
                            ncol = 1)
 
 print(Microbes.plot)
@@ -162,11 +166,11 @@ print(Microbes.plot)
 
 How would you use all of this data to talk about changes in microbial water quality from 1970 to 2000? What are the challenges?
 
->
+> Total coliform <-subset- fecal coliform (.7) <-subset- fecal coliform (.45) Since the maximum of FC .7 was around 12500 before 1980, the FC .45 back the period should be at least 12500. As such, we can assume that FC decreased over the time period. We can also back predict FC.45 before 1980 by examining the general relationship between FC.45 and FC.7
 
 Do you think water quality has improved between 1970 and 2000? Why or why not?
 
->
+> yes
 
 The city of Lawrence, MA is downstream of Lowell and gets its drinking water from the Merrimack River. Use the federal drinking water standard for Total Coliforms (https://www.epa.gov/ground-water-and-drinking-water/national-primary-drinking-water-regulations#Microorganisms) to comment on whether or not this water necessarily needs to be treated for bacteria.
 
@@ -191,21 +195,41 @@ coli.monthly.summaries <- microb.dat %>%
 
 coli.seasons <- ggplot(coli.monthly.summaries, aes(x = month)) +
   geom_ribbon(aes(ymin = quant25, ymax = quant75), alpha = 0.3) +
+  # The order of quantiles matter 
   geom_line(aes(y = Median)) +
   scale_x_continuous(name = "Month",
                      breaks = c(1,2,3,4,5,6,7,8,9,10,11,12)) +
     labs(y = "Total coliforms (cfu / 100 ml)") 
 
 print(coli.seasons)
+
+total.monthly.summaries <- microb.dat %>%
+  mutate(month = month(Date)) %>%
+  group_by(month) %>%
+  select(month, Total.cell) %>%
+  summarize_all(funs(Median = median(., na.rm = T),
+                 quant25 = quantile(., .25, na.rm = T),
+                 quant75 = quantile(., .75, na.rm = T)))
+
+total.seasons <- ggplot(total.monthly.summaries, aes(x = month)) +
+  geom_ribbon(aes(ymin = quant25, ymax = quant75), alpha = 0.3) +
+  # The order of quantiles matter 
+  geom_line(aes(y = Median)) +
+  scale_x_continuous(name = "Month",
+                     breaks = c(1,2,3,4,5,6,7,8,9,10,11,12)) +
+    labs(y = "Total Cells (cfu / 100 ml)") 
+
+print(total.seasons)
+
 ```
 
 When are total coliform concentrations highest? Why might this be?
 
->
+> During summer when temperature is high and conducive to bacterial proliferation.
 
 Does this pattern also exist for the other microbial indicators?
 
->
+> Yes for total cells
 
 ## Combined Sewer Overflows (CSOs)
 
@@ -215,7 +239,7 @@ The USGS site that we got the water quality data from does not have discharge da
 
 Which site's discharge data would better indicate when the city of Lowell has exprienced a big rain event?
 
->
+> The site on the river with smaller catchment area, because it can reflect more regional changes
 
 What would a CSO event look like in the data?
 

@@ -106,10 +106,10 @@ MysterySite.Annual.all <- MysterySiteDischarge %>%
 library(stringr)
 ggplot(MysterySite.Annual.30yr,
        aes(x = RecurrenceInterval, y = PeakDischarge, col = "First 30 Years")) +
-  geom_point(alpha = 0.5) + geom_line() +
+  geom_point(alpha = 0.5) + geom_step() +
   geom_point(data = MysterySite.Annual.all, alpha = 0.5,
              aes(x = RecurrenceInterval, y = PeakDischarge, col = "All Years")) +
-  geom_line(data = MysterySite.Annual.all,
+  geom_step(data = MysterySite.Annual.all,
              aes(x = RecurrenceInterval, y = PeakDischarge, col = "All Years")) +
   labs(x = "Recurrence Interval (Years)" , y = expression("Discharge (ft"^3*s^-1*")"),
        col = str_wrap("Data Used for R.I.", width = 10)) +
