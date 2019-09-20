@@ -137,15 +137,15 @@ model.all$coefficients[1] + model.all$coefficients[2] * 100
 > The model constructed from the first 30 years yields a higher prediction than the model used all available data. The difference may indicate that the discharge of this river is not stationary and discharge on avergae decreases over years.
 
 ## Reflection
-13. What are 2-3 conclusions or summary points about river discharge you learned through your analysis?  
-1. The driving factor(s) for the discharge of an unknown river could potentially be determined by examining the relationship between discharge compiled across multiple years and the day of year. In addition, quartiles (e.g. Q1, median, Q2) are helpful in reflecting the variation throughout a year as well as among different years but on the same day of year. In this case, the discharge in the unknown river seems to be driven by precipitation during winter and spring.  
-2. The linear regression model constructed for the relationship between discharge and recurrence interval can be used as a tool to predict the discharge of a given R.I. or vice versa. The predicted discharge for a 100-year R.I. is 20347 ft^3 s^-1 and 13225 ft^3 s^-1 according to the model using 30 years and the model using all data, respectively. The 30-year model gives a higher prediction, and the reason could be that the discharge decreases over years.  
-3. It is noteworthy that the relationship could be linear without logarithm-transformation, in contrast with the example from the class. In fact, for this assignment the the model without log-transformation gives a higher R-squared value (0.956 for all years; 0,955 for 30 years) than the one with transformation (0.724 and 0.699 respectively). Indeed, a logarithm curve is not shown on the graph for both sets of data, and data points appear to scatter around a straight line.
+13. What are 2-3 conclusions or summary points about river discharge you learned through your analysis?
+    1. The driving factor(s) for the discharge of an unknown river could potentially be determined by examining the relationship between discharge compiled across multiple years and the day of year. In addition, quartiles (e.g. Q1, median, Q2) are helpful in reflecting the variation throughout a year as well as among different years but on the same day of year. In this case, the discharge in the unknown river seems to be driven by precipitation during winter and spring.    
+    2. The linear regression model constructed for the relationship between discharge and recurrence interval can be used as a tool to predict the discharge of a given R.I. or vice versa. The predicted discharge for a 100-year R.I. is 20347 ft^3 s^-1 and 13225 ft^3 s^-1 according to the model using 30 years and the model using all data, respectively. The 30-year model gives a higher prediction, and the reason could be that the discharge decreases over years.    
+    3. It is noteworthy that the relationship could be linear without logarithm-transformation, in contrast with the example from the class. In fact, for this assignment the the model without log-transformation gives a higher R-squared value (0.956 for all years; 0,955 for 30 years) than the one with transformation (0.724 and 0.699 respectively). Indeed, a logarithm curve is not shown on the graph for both sets of data, and data points appear to scatter around a straight line.
 
 14. What data, visualizations, and/or models supported your conclusions from 13?  
-1. The conclusion is drawn merely based on the visualization of discharge among different days of year (The first graph).  
-2. The numeric predictions were produced by the two linear regression models, and the trend of discharge over years is postulated based on the difference.  
-3. The choice of models was made according to the statistical summary of each model.
+    1. The conclusion is drawn merely based on the visualization of discharge among different days of year (The first graph).    
+    2. The numeric predictions were produced by the two linear regression models, and the trend of discharge over years is postulated based on the difference.      
+    3. The choice of models was made according to the statistical summary of each model.    
 
 15. Did hands-on data analysis impact your learning about discharge relative to a theory-based lesson? If so, how?
 
