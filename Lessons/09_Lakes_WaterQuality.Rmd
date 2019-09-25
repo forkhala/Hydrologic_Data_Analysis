@@ -14,7 +14,8 @@ editor_options:
 3. Analyze spatial and temporal patterns of water quality across the northeast U.S.
 
 ## Opening Discussion
-What are the major water quality impairments experienced in lakes?  
+What are the major water quality impairments experienced in lakes?
+> Dissolved O2, nutrients - N, P, trace element , microbes, ordor/color, invasive species, heavy metals (contaminants)
 
 ## Session Set Up
 
@@ -23,13 +24,14 @@ getwd()
 
 library(tidyverse)
 library(lubridate)
-#install.packages("LAGOSNE")
+# install.packages("LAGOSNE")
 library(LAGOSNE)
 
 theme_set(theme_classic())
 options(scipen = 100)
 
 lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
+# Run the command once on one computer to download the database; unless updates have been made for data
 
 ```
 
@@ -49,9 +51,9 @@ LAGOSdata <- lagosne_load()
 names(LAGOSdata)
 
 # If the package installation and data download has not worked, use this code: 
-# load(file = "./Data/Raw/LAGOSdata.rda")
+load(file = "./Data/Raw/LAGOSdata.rda")
 
-# Exploring the data types that are available
+# Exploring the data types that are available (metadata)
 LAGOSlocus <- LAGOSdata$locus
 LAGOSstate <- LAGOSdata$state
 LAGOSnutrient <- LAGOSdata$epi_nutr
@@ -89,7 +91,10 @@ Robert Carlson's 1977 paper, "A trophic state index for lakes," established the 
 To calculate the **Trophic State Index**, three variables can be used. Note these should not be used to define trophic state but as indicators of the broader condition. Comparing these values in a given lake can give insight into the broader mechanisms at play.
 
 * *chlorophyll a concentration*, a proxy for algal (phytoplankton) biomass. Pros: direct measure of primary productivity
-* *Secchi disk transparency*, a measure of water clarity. Pros: simple and cheap. Cons: may yield a high TSI in highly colored lakes and in lakes where particulate matter is comprised of non-algal material 
+* *Secchi disk transparency*, a measure of water clarity. Pros: simple and cheap. Cons: may yield a high TSI in highly colored lakes and in lakes where particulate matter is comprised of non-algal material
+
+> Factors that influence transparency: algae, sediment, dissolved organic matter
+
 * *Total phosphorus (TP)*, a nutrient essential for growth of primary producers. Assumptions: phosphorus is the limiting nutrient for phytoplankton growth (this assumption often holds only for summer months)
 
 $TSI(Chl) = 10(6 - (2.04 - 0.68 ln Chl/ln 2))$
@@ -116,7 +121,9 @@ LAGOStrophic <-
   mutate(sampleyear = year(sampledate), 
          samplemonth = month(sampledate), 
          season = as.factor(quarter(sampledate, fiscal_start = 12))) %>%
+  # Dec, Jan, Feb - winter (1), Mar, April, May - Spring (2), and so on
   drop_na(chla:secchi)
+  # Remove rows with NA in ANY of the three coloumns Chla, tp, sechi
 
 levels(LAGOStrophic$season) <- c("Winter", "Spring", "Summer", "Fall")
 ```
@@ -130,6 +137,7 @@ ggplot(LAGOStrophic,
   labs(x = "Month", y = expression(Chlorophyll ~ a ~ (mu*g / L)), color = "Year") +
   scale_color_viridis_c(option = "magma")
 print(chlbymonth)
+# Data within a month are spred over the width of that month category
 
 secchibymonth <-
 ggplot(LAGOStrophic, 
@@ -138,6 +146,7 @@ ggplot(LAGOStrophic,
   labs(x = "Month", y = "Secchi depth (m)", color = "Year") +
   scale_color_viridis_c(option = "magma")
 print(secchibymonth)
+# Sacchi depth is generally opposite to chlorophyll conc.
 
 tpbymonth <- 
 ggplot(LAGOStrophic, 
@@ -146,11 +155,12 @@ ggplot(LAGOStrophic,
   labs(x = "Month", y = expression(Total ~ P ~ (mu*g / L)), color = "Year") +
   scale_color_viridis_c(option = "inferno")
 print(tpbymonth)
+
 ```
 
 What do you notice about the seasonality of these variables? If we were to characterize a lake based on the value of a given variable, how might seasonality affect our interpretations?
 
->
+> There is concurrent increase in nutrient and chla during summer in comparison to winter. Secchi depth observations are more concentrated near the low values during summer, which is consistent with the observations on nutrient and chla. Also there is noticeably more sampling effort during summer than winter
 
 ### Calculating trophic state index
 Let's add a TSI value calculated from each of the three variables to the data frame. Let's also add a column that designates the lake as oligotrophic, mesotrophic, eutrophic, or hypereutrophic based on the TSI.chl value. Make notes about the code as we go along.
@@ -168,6 +178,8 @@ LAGOStrophic <-
 LAGOStrophic$trophic.class <- 
   factor(LAGOStrophic$trophic.class,
          levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
+
+# Note the thre indices do not yield the same conclusion on trophic state, and there is no consistant difference among the three indices (e.g. one is always larger than another one). However, chla is used to determine eutrophic state, since it directly results from eutrophic state.
 
 # LAGOStrophic$season <- 
 #   factor(LAGOStrophic$season,
