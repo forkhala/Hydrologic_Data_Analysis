@@ -185,7 +185,7 @@ LAGOStrophic$trophic.class <-
 #   factor(LAGOStrophic$season,
 #          levels = c("Spring", "Summer", "Fall", "Winter"))
 
-#scales::show_col(colormap(colormap = colormaps$magma, nshades=16))
+# scales::show_col(colormap(colormap = colormaps$magma, nshades=16))
 ```
 
 Now let's compare TSI values calculated from chl, secchi depth, and TP. If these were all perfectly equivalent metrics, all points should line up on the 1:1 line. 
@@ -209,7 +209,7 @@ print(chlvstp)
 
 What is the observed relationship, and how does it depart from the 1:1 relationship? What do values above or below the 1:1 line tell us about the conditions present in a lake?
 
-> 
+> Data points are concentrated below the 1:1 line, suggesting that chlorophyll predicts higher trophic status than Secchi depth and P. Also, when P is below about 30, P suggests oligotrophic whereas chl suggests mesotrophic to eutrophic
 
 ### Comparing TSI across states
 Here are three different ways to envision TSI across the states in the LAGOS-NE database. 
@@ -244,14 +244,21 @@ stateTSIjitter <- ggplot(LAGOStrophic, aes(x = state, y = TSI.chl, color = seaso
   scale_color_viridis_d(option = "magma")
 print(stateTSIjitter)
 
+
 ```
 What insights do we gain from the different visualizations?
 
-> Violin: 
+> Violin: distribution of data points along the whole range; where most data points are concentrated
 
-> Bar: 
+> Bar: clear comparison of the counts of different categories (e.g. different trophic status levels)
 
 > Jitter:
 
+
 ## Closing Discussion
 What factors might you expect to influence TSI scores in a given area? What are some variables in the LAGOSNE database that could help you test your hypothesis?
+```{r}
+write.csv(LAGOStrophic, file = "./Data/LAGOS.csv", row.names = F)
+
+```
+
