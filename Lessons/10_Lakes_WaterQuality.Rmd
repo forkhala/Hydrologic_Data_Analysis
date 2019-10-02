@@ -50,7 +50,7 @@ In your group, look through the LAGOS-NE database and decide on 5 variables avai
 
 > Variable 2: Secchi depth (epi_nutr)
 
-> Variable 3: mean depth (lakes_limno)
+> Variable 3: maxdepth (lakes_limno)
 
 > Variable 4 doc (epi_nutr)
 
@@ -60,14 +60,15 @@ Wrangle LAGOSdata so that you have a new data frame that includes TN, TP, your f
 
 ```{r}
 # Wrangle data here.
-LAGOSchag <- LAGOSdata$state.chag
+LAGOSnutrient <- LAGOSdata$epi_nutr
+LAGOSlocus <- LAGOSdata$locus
+LAGOSstate <- LAGOSdata$state
 LAGOSlimno <- LAGOSdata$lakes_limno
 
 # Tell R to treat lakeid as a factor, not a numeric value
 LAGOSlocus$lagoslakeid <- as.factor(LAGOSlocus$lagoslakeid)
 LAGOSnutrient$lagoslakeid <- as.factor(LAGOSnutrient$lagoslakeid)
 LAGOSlimno$lagoslakeid <- as.factor(LAGOSlimno$lagoslakeid)
-LAGOSchag$state_zoneid <- as.factor(LAGOSchag$state_zoneid)
 
 # Join data frames
 LAGOSlocations <- left_join(LAGOSlocus, LAGOSstate, by = "state_zoneid")
@@ -91,6 +92,24 @@ Examine potential correlations among your predictor variables. If your predictor
 
 ```{r}
 
+# Join dataframes
+LAGOStrophic <- 
+  left_join(LAGOSnutrient, LAGOSlocations, by = "lagoslakeid") %>%
+  left_join(., LAGOSlimno, by = "lagoslakeid") %>%
+  select(lagoslakeid, sampledate, tn, tp, state, secchi, maxdepth, doc, chla,
+         gnis_name, lake_area_ha, state_name) %>%
+  mutate(sampleyear = year(sampledate), 
+         samplemonth = month(sampledate), 
+         season = as.factor(quarter(sampledate, fiscal_start = 12))) %>%
+  # Dec, Jan, Feb - winter (1), Mar, April, May - Spring (2), and so on
+  drop_na(tn:chla)
+  # Remove rows with NA in ANY of the three coloumns Chla, tp, sechi
+
+levels(LAGOStrophic$season) <- c("Winter", "Spring", "Summer", "Fall")
+
+# Create correlation plots
+cor.m <- cor(LAGOStrophic[,c(3:4, 6:9)])
+corplot <- corrplot(cor.m, method = "ellipse", type = "upper")
 ```
 
 What patterns do you see?
@@ -100,6 +119,16 @@ What patterns do you see?
 2. Create two linear regression models (hint: function `lm`) to predict TN and TP using your five predictor variables. 
 
 ```{r}
+library(lme4)
+lme
+
+model.tn <- glm(tn ~ state + secchi + maxdepth + doc + chla, data = LAGOStrophic)
+summary(model.tn)
+anova(model.tn)
+
+model.tp <- glm(tp ~ state + secchi + maxdepth + doc + chla, data = LAGOStrophic)
+summary(model.tn)
+anova(model.tp)
 
 ```
 
