@@ -31,7 +31,9 @@ library(tseries)
 
 theme_set(theme_classic())
 
-LAGOSdata <- lagosne_load()
+LAGOSdata <- lagosne_load(fpath = "") # Load LAGOSNE data from local files
+load(file = "./Data/Raw/LAGOSdata.rda")
+
 ```
 
 ## Trend analysis
@@ -55,18 +57,18 @@ In general, detecting a monotonic trend requires a long sequence of data with fe
 
 Adjusting the data may be necessary to fulfill the assumptions of a trend test. These adjustments include **aggregation**, **subsampling**, and **interpolation**. What do each of these mean, and why might we want to use them?
 
-> aggregation: 
+> aggregation: merge multiple data into one category, reducing rows of dataset. Methods used for aggregation depend on question, e.g. mean, range.
 
-> subsampling: 
+> subsampling: Applied when aggregation may change the variability of data unintentionally, e.g. unequal time frequency during two periods (daily vs weekly) and aggregating daily data into weekly may mask variability & trends
 
-> interpolation: 
+> interpolation: predicting gaps based on the nearest available data
 
 Specific tests for monotonic trend analysis are listed below, with assumptions and tips: 
 
 * **linear regression**: no seasonality, fits the assumptions of a parametric test. Function: `lm`
 * **Mann-Kendall**: no seasonality, non-parametric, no temporal autocorrelation, missing data allowed. Function: `mk.test` (package: trend)
-* **modified Mann-Kendall**: no seasonality, non-parametric, accounts for temporal autocorrelation, missing data allowed. Function: `mmky` and `mmkh` (package: modifiedmk)
-* **Seasonal Mann-Kendall**: seasonality, non-parametric, no temporal autocorelation, identical distribution. Function: `smk.test` (package: trend)
+* **modified Mann-Kendall**: no seasonality, non-parametric, accounts for temporal autocorrelation, missing data allowed. Function: `mmky` and `mmkh` (package: modifiedmk). (More conservative than original M-K function if autocorrelation is potentially present)
+* **Seasonal Mann-Kendall**: seasonality, non-parametric, no temporal autocorelation, identical distribution (constant gap betwee each observation). Function: `smk.test` (package: trend)
 
 The packages trend, Kendall, and modifiedmk also include other modifications to monotonic trend tests. Look into the documentation for these packages if you are applying a special case.
 
@@ -111,12 +113,16 @@ Mendotadata <- Mendotadata %>%
   filter(tp < 300 & sampledate > "1988-01-01") %>%
   arrange(sampledate)
 
+# Check sampling frequency
+table(diff(Mendotadata$sampledate))
+
 # Re-plot data
 MendotaTP <-
 ggplot(Mendotadata, aes(x = sampledate, y = tp)) +
   geom_point() +
   geom_line()
 print(MendotaTP)
+
 ```
 
 We see distinct seasonality, with higher TP values occurring in the winter compared to summer. Therefore, we will proceed with a **Seasonal Mann-Kendall** test. 
@@ -125,40 +131,63 @@ We see that TP data were collected somewhere between biweekly and monthly across
 
 Common interpolation methods: 
 
-* **Piecewise constant**: <fill in notes here>
-* **Linear**: <fill in notes here>
-* **Spline**: <fill in notes here>
+* **Piecewise constant**: <Nearest neighboring data interpolation - use the nearest available data to replace gaps>
+* **Linear**: <Connect availble data by straight segments and predict the missing  point using the linear relationship>
+* **Spline**: <Nonlinear relationship>
+* Some other advacned techniques: Bayesian inference using other concurrent available variables during the time period in which one variable is missing
+* If the dataset has a very long time span, we can use values from other years on the same day to interpolate missing values.
 
 Linear interpolation is most common for water quality data, and fits with our understanding about how TP might change over time in this system. 
 ```{r}
 # Generate monthly values from July 1988 to August 2013
 linearinterpolation <- as.data.frame(approx(Mendotadata, n = 303, method = "linear"))
+# Note in results from interpolation function, x has an origin on 1970 Jan 01
 linearinterpolation$x <- as.Date(linearinterpolation$x, origin = "1970-01-01")
 names(linearinterpolation) <- c("Date", "TP")
+
+# WARNING: here n = 303 leads to 30 days a month, which will cause mismatch after converting to time-series (ts). Increase the n and take average by group to make ts consistent with results from interpolation
+linearinterpolation.update <- 
+  as.data.frame(approx(Mendotadata, n = 500, method = "linear"))
+linearinterpolation.update$x <- 
+  as.Date(linearinterpolation.update$x, origin = "1970-01-01")
+names(linearinterpolation.update) <- c("Date", "TP")
 
 # Inspect interpolated values 
 MendotaTPinterpolated <-
 ggplot(Mendotadata, aes(x = sampledate, y = tp)) +
   geom_point() +
   geom_line() +
-  geom_point(data = linearinterpolation, aes(x = Date, y = TP), color = "#c13d75ff") 
+  geom_point(data = linearinterpolation.update, aes(x = Date, y = TP), color = "#c13d75ff") 
 print(MendotaTPinterpolated)
 
 # Generate time series (smk.test needs ts, not data.frame)
 Mendotatimeseries <- ts(linearinterpolation$TP, frequency = 12, 
                         start = c(1988, 7, 5), end = c(2013, 8, 5))
+# This will give a ts with 302 observations, which is 1 less than 303 obs
+
+linearinterpolation.update <- linearinterpolation.update %>%
+  mutate(Year = year(Date), 
+         Month = month(Date)) %>%
+  group_by(Year, Month) %>%
+  summarise(TP = mean(TP))
+
+Mendotatimeseries.monthly <- ts(linearinterpolation.update$TP, frequency = 12, 
+                        start = c(1988, 7), end = c(2013, 8))
+
 # Run SMK test
-Mendotatrend <- smk.test(Mendotatimeseries)
+# Mendotatrend <- smk.test(Mendotatimeseries)
+Mendotatrend.monthly <- smk.test(Mendotatimeseries.monthly)
 
 # Inspect results
-Mendotatrend
-summary(Mendotatrend)
-
+Mendotatrend.monthly
+# the sign of z-scores indicates the direction of trend; p-value for significance 
+# S is the difference between two points; the absolute value of S reflect the magnitude of the trend
+summary(Mendotatrend.monthly)
 ```
 
 What would we conclude based on these findings? Describe as you would to an educated but non-specialist audience.
 
->
+> There is no overall trend across the whole time span of dataset. Yet, October and November have a negative trend, while all other months show no changes. (NOT TRUE)
  
 If a significant trend was present, we could compute a **Sen's Slope** to quantify that trend (`sens.slope` function in the trend package).
  
@@ -182,6 +211,7 @@ ClearCreekDischarge <- readNWISdv(siteNumbers = "06719505",
                      endDate = "")
 names(ClearCreekDischarge)[4:5] <- c("Discharge", "Approval.Code")
 
+# Aggregate data into month average
 ClearCreekDischarge.Monthly <- ClearCreekDischarge %>%
   mutate(Year = year(Date), 
          Month = month(Date)) %>%
@@ -195,7 +225,9 @@ ClearCreek_ts <- ts(ClearCreekDischarge.Monthly[[3]], frequency = 12)
 ARMA models require stationary data. This means that there is no monotonic trend over time and there is also equal variance and covariance across the time series. The function `adf.test` will determine whether our data are stationary. The null hypothesis is that the data are not stationary, so we infer that the data are stationary if the p-value is < 0.05.
 
 ```{r}
+# Test whether or not dataset is stationary; and the H0 is not stationary
 adf.test(ClearCreek_ts, alternative = "stationary")
+# We conclude that data are stationary
 ```
 
 Let's inspect the ACF and pacf plots. Notice these don't match up perfectly with just one AR or MA formulation, so we likely have interactions of both processes at play. 
@@ -209,6 +241,7 @@ While some processes might be easy to identify, it is often complicated to predi
 ```{r}
 # run the arima function and search for best fit 
 auto.arima(ClearCreek_ts, trace = TRUE)
+# ARIMA(1,0,1)(2,1,0)[12] is selected, suggesting that the best-fit model has the combination of 1st order AR and 1st order MA models
 
 # create an object that defines the best fit model
 fit <- arima(ClearCreek_ts, c(1, 0, 1),seasonal = list(order = c(2, 1, 0), period = 12))
