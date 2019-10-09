@@ -31,9 +31,9 @@ library(tseries)
 
 theme_set(theme_classic())
 
-LAGOSdata <- lagosne_load(fpath = "") # Load LAGOSNE data from local files
-load(file = "./Data/Raw/LAGOSdata.rda")
-
+LAGOSdata <- lagosne_load(fpath = "D:/William/Duke/Study/EOS 722/Hydrologic_Data_Analysis/Data/Raw/data_1.087.3.rds") 
+# Load LAGOSNE data from local LAGOS temporary files
+load(file = "./Data/Raw/.rda")
 ```
 
 ## Trend analysis
