@@ -5,6 +5,10 @@ output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
   chunk_output_type: console
+knit: (function(inputFile, encoding) { 
+          rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file='Zhang_A06_TimeSeries.pdf') })
 ---
 
 ## OVERVIEW
@@ -28,7 +32,13 @@ The completed exercise is due on 11 October 2019 at 9:00 am.
 4. Load the ClearCreekDischarge.Monthly.csv file from the processed data folder. Call this data frame ClearCreekDischarge.Monthly.
 
 ```{r setup}
+getwd()
+packages <- c("tidyverse", "lubridate", "trend", "dataRetrieval")
+invisible(lapply(packages, library, character.only = T))
+theme_set(theme_classic())
 
+ClearCreekDischarge.Monthly <- 
+  read.csv("../../Data/Processed/ClearCreekDischarge.Monthly.csv", header = T)
 ```
 
 ## Time Series Decomposition
@@ -38,14 +48,46 @@ The completed exercise is due on 11 October 2019 at 9:00 am.
 8. Decompose the time series using the `stl` function.
 9. Visualize the decomposed time series.
 ```{r}
+# Retrieve Daily Value data
+# whatNWISdata(siteNumbers = "02085070")
+EnoDischarge <- readNWISdv(siteNumbers = "02085070", parameterCd = "00060",
+                           # discharge (ft3/s)
+                           startDate = "", endDate = "")
+names(EnoDischarge)[4:5] <- c("Discharge", "Approval.Code")
 
+# Remove Feb 29s in leap years to make frequency of ts constant
+allyears <- unique(year(EnoDischarge$Date))
+Feb29s <- paste(allyears[leap_year(allyears)], "02", "29", sep = "-")
+EnoDischarge <-  filter(EnoDischarge, !(Date %in% as.Date(Feb29s)))
+
+# Plot
+ggplot(EnoDischarge, aes(x = Date, y = Discharge))+
+  geom_line()+
+  labs(x = "Year", y = expression("Discharge (ft"^3*"s"^-1*")"))
+
+# Create a time series for Eno River
+Eno_ts <- ts(EnoDischarge$Discharge, frequency = 365)
+
+# time series for Clear Creek from L11
+ClearCreekDischarge <- readNWISdv(siteNumbers = "06719505",
+                     parameterCd = "00060", # discharge (ft3/s)
+                     startDate = "",
+                     endDate = "")
+names(ClearCreekDischarge)[4:5] <- c("Discharge", "Approval.Code")
+ClearCreek_ts <- ts(ClearCreekDischarge[[4]], frequency = 365)
+ClearCreek_Decomposed <- stl(ClearCreek_ts, s.window = "periodic")
+
+#Decomposition
+Eno_Decomposed <- stl(Eno_ts, s.window = "periodic")
+plot(ClearCreek_Decomposed)
+plot(Eno_Decomposed)
 ```
 
 10. How do the seasonal and trend components of the decomposition compare to the Clear Creek discharge dataset? Are they similar in magnitude?
 
-> Seasonal: 
+> Seasonal: Clear Creek has much higher seasonality than Eno River, as the magnitude of seasonal variation in Clear Creek is about 3 times as large as the bar shown on the right, while that in Eno River is about the same as the bar. Also, the range of y-axis can be used to compare seasonalities.
 
-> Trend: 
+> Trend: The magnitudes of trends in two rivers are about the same, although they exhibit different trend patterns.
 
 ## Trend Analysis
 Research question: Has there been a monotonic trend in discharge in Clear Creek over the period of study?
@@ -53,30 +95,38 @@ Research question: Has there been a monotonic trend in discharge in Clear Creek 
 11. Generate a time series of monthly discharge in Clear Creek from the ClearCreekDischarge.Monthly data frame. This time series should include just one column (discharge). 
 12. Run a Seasonal Mann-Kendall test on the monthly discharge data. Inspect the overall trend and the monthly trends. 
 ```{r}
+# Generate time series
+ClearCreekMonthly_ts <- ts(ClearCreekDischarge.Monthly$Discharge, frequency = 12,
+                           start = c(1974, 10), end = c(2019, 10))
+
+# Run SMK test
+ClearCreekMonthly_test <- smk.test(ClearCreekMonthly_ts)
+ClearCreekMonthly_test
+summary(ClearCreekMonthly_test)
 
 ```
 
 13. Is there an overall monotonic trend in discharge over time? If so, is it positive or negative?
 
-> 
+> Overall the p-value is 0.09719, so we cannot reject the null hypothesis that there is no trend in discharge over time.
 
 14. Are there any monthly monotonic trends in discharge over time? If so, during which months do they occur and are they positive or negative?
 
-> 
+> Returned values of summary() function indiate that although there is no overall trend, December and January(season 3 & 4) have positive trend over time, shown by the positive S values, that is statistically significant.
 
 ## Reflection
 15. What are 2-3 conclusions or summary points about time series you learned through your analysis?
 
->
+> Variations in hydrological parameters that tend to have seasonality may be attributed to multiple components: overall trend, seasonality, and random error/residual. Due to the presence of seasonality, linear regression may not be appropriate for detecting overall trend, as it can be masked by seasonality,
 
 16. What data, visualizations, and/or models supported your conclusions from 12?
 
-> 
+> The contribution of each component can be visualized by the summaizing plot of a decomposed time series. The inadequacy of linear regression in time series can be seen in the graph with `geom_smooth(method = "lm")` plotted in class.
 
 17. Did hands-on data analysis impact your learning about time series relative to a theory-based lesson? If so, how?
 
->
+> It may not be perplexing to understand changes over time, but actually constructing and analyzing time series model turns out to be relatively complex. It's good to have some practical experience on performing the analysis.
 
 18.	How did the real-world data compare with your expectations from theory?
 
->
+> It is as expected that certain hydrological parameters such as discharge could exhibit cycling patterns that are caused by seasons. Also, there could be overall trend due to large-scale shifts, e.g. climate change.

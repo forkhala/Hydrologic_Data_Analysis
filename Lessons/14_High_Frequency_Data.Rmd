@@ -25,8 +25,10 @@ Wednesday we used high-frequency hydrographs to learn about how water flows thro
 ```{r, message = FALSE}
 getwd()
 
-# install.packages("StreamPULSE")
-# install.packages("streamMetabolizer")
+install.packages("streamMetabolizer", dependencies = TRUE, repos = c("https://owi.usgs.gov/R", "https://cran.studio.com"))
+
+library(devtools)
+install_github("streampulse/streamPULSE")
 
 packages <- c(
   "dataRetrieval", 
@@ -61,6 +63,7 @@ CCdat <- readNWISuv(
   renameNWISColumns() %>%
   rename(Nitrate_mgl = 6)
 
+#C-Q plot
 ggplot(CCdat,
        aes(x = Flow_Inst, y = Nitrate_mgl)) +
   geom_point() +
@@ -86,11 +89,11 @@ ggplot(Potdat,
 
 Which of these rivers is more chemostatic?
 
->
+> Crane Creek. Nitrate concentration remains relatively constant across instantaneous flow.
 
 ## Hysteresis Loops
 
-Hysteresis occurs when the concentration varies with discharge in a different relationship on the rising and falling limbs of a storm. This can be caused by _flushing_ behavior or _dilution_ behavior. 
+Hysteresis occurs when the concentration varies with discharge in a different relationship on the rising and falling limbs of a storm. This can be caused by _flushing_ behavior or _dilution_ behavior. The reason could be that at different stages of storming, either quickflow or baseflow dominates the increase in discharge.
 
 ```{r}
 dygraph(
@@ -119,15 +122,15 @@ ggplot(PotomacStorm, aes(x = Flow_Inst, y = Nitrate_mgl, color = dateTime)) +
 
 Did this storm exhibit clockwise or counterclockwise hysteresis?
 
->
+> counterclockwise, suggesting that the source for rising limb has (i.e. quickflow) lower concentration than that (i.e. baseflow) for falling limb.
 
 Which direction do hysteresis loops slope for diluting storms?
 
->
+> Negative slopes
 
 Which direction do hysteresis loops go for flushing storms?
 
->
+> Positive slopes
 
 ## Using dissolved oxygen to estimate metabolism
 
@@ -137,7 +140,7 @@ What is "ecosystem metabolism"?
 
 Why would we want to know the *GPP* and *ER* of a river reach?
 
->
+> GPP = Gross Primary Productivity; ER = Ecosystem Respiration
 
 
 The StreamPulse project is a group of researchers around the world who are measuring oxygen concentrations in streams to determine the GPP and ER of many different types of streams and rivers from around the globe. We will be using data from their website for this class period. This project uses the R package `streamMetabolizer` to compute its estimates of metabolism and allows data download from its site using the `StreamPULSE` R package.
@@ -158,6 +161,7 @@ Eno.lon <- Enodat[[2]]$lon
 
 Eno.DO <- Enodat[[1]] %>%
   spread(value = value, key = variable) %>%
+  # Convert time in UTC format to solar time
   mutate(DateTime_Solar = convert_UTC_to_solartime(DateTime_UTC, Eno.lon))
 
 ggplot(Eno.DO, aes(x = DateTime_Solar, y = DO_mgL)) + geom_line()

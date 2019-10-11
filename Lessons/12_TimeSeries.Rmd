@@ -145,9 +145,11 @@ linearinterpolation <- as.data.frame(approx(Mendotadata, n = 303, method = "line
 linearinterpolation$x <- as.Date(linearinterpolation$x, origin = "1970-01-01")
 names(linearinterpolation) <- c("Date", "TP")
 
-# WARNING: here n = 303 leads to 30 days a month, which will cause mismatch after converting to time-series (ts). Increase the n and take average by group to make ts consistent with results from interpolation
+# WARNING: here n = 303 leads to 30 days a month, which will cause mismatch after converting to time-series (ts). n set to number of days and take average by group to make ts consistent with results from interpolation
+# Number of days: 
+difftime(max(Mendotadata$sampledate), min(Mendotadata$sampledate), "days")
 linearinterpolation.update <- 
-  as.data.frame(approx(Mendotadata, n = 500, method = "linear"))
+  as.data.frame(approx(Mendotadata, n = 9162, method = "linear"))
 linearinterpolation.update$x <- 
   as.Date(linearinterpolation.update$x, origin = "1970-01-01")
 names(linearinterpolation.update) <- c("Date", "TP")

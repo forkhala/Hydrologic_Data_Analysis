@@ -8,7 +8,7 @@ editor_options:
 knit: (function(inputFile, encoding) { 
           rmarkdown::render(inputFile,
                         encoding=encoding, 
-                        output_file='Zhang_A05_LakePhysical.pdf') })
+                        output_file='Zhang_A05_LakeWQ.pdf') })
 ---
 
 ## OVERVIEW
