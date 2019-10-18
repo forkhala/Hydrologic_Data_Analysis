@@ -16,6 +16,9 @@ editor_options:
 ## Opening Discussion
 
 What are the big ideas from last class about mapping?
+> Projection code used for each layer
+> sf in R is a basic and good packages for mapping visualization
+> Lines and polygons for different areas are specified in the datase
 
 ## Session Set Up
 
@@ -35,7 +38,8 @@ Today, we will be working with the USA rivers shape file (see metadata file in R
 
 ### Water features line objects
 ```{r}
-waterfeatures <- st_read("../Data/Raw/hydrogl020.dbf")
+waterfeatures <- st_read("./Data/Raw/hydrogl020.dbf")
+# bbox in the returning from st_read is the bounding box of the map
 class(waterfeatures)
 
 # Filter for North Carolina
@@ -50,8 +54,9 @@ The .dbf file extension represents an ESRI shapefile. From the `st_read` functio
 ```{r}
 Waterfeaturesplot <- 
 ggplot(waterfeatures) +
-  geom_sf(aes(fill = FEATURE, color = FEATURE)) +
-  scale_color_viridis_d(option = "magma", end = 0.9) +
+  geom_sf(aes(fill = FEATURE, color = FEATURE)) + 
+  # fill specifies the filling of polygons; color specifies the boundary
+  scale_color_viridis_d(option = "magma", end = 0.9) + 
   scale_fill_viridis_d(option = "magma", end = 0.9)
 print(Waterfeaturesplot)
 
@@ -61,11 +66,16 @@ print(Waterfeaturesplot)
 
 We will upload the HUC6 watershed designations for North Carolina. Note that in the Watersheds_Spatial folder, there are many different shape file datasets going from HUC2 (largest) to HUC16 (smallest) and NWIS drainage lines. These are all downloaded as zip from the Watershed Boundary Dataset (WBD).
 ```{r}
-HUC6 <- st_read("../Data/Raw/Watersheds_Spatial/WBDHU6.dbf")
+HUC6 <- st_read("./Data/Raw/Watersheds_Spatial/WBDHU6.dbf")
+head(HUC6)
 
 summary(HUC6$States)
 HUC6.NC <- HUC6 %>%
   filter(States %in% c("GA,NC,SC", "NC", "NC,SC", "NC,SC,VA", "NC,VA"))
+
+# Or Use str_detect() in the package stringr to filter rows with "NC" in States column
+HUC6.NC <- HUC6 %>%
+  filter(str_detect(States, "NC"))
 
 
 ```
@@ -89,6 +99,7 @@ NClayers <- ggplot() +
   geom_sf(data = waterfeatures) +
   scale_fill_brewer(palette = "Paired")
 print(NClayers)
+# Note Paired palette has darker and lighter shades for each color, and may by misleading that the ares of the same color but different shades are somehow related
 
 ```
 
